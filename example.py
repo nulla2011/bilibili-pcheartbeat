@@ -40,7 +40,7 @@ def match_csrf(cookie):
 
 
 # 心跳E
-def heart_beat_e(room_id=23058):
+def heart_beat_e(room_id):
     url = 'https://live-trace.bilibili.com/xlive/data-interface/v1/x25Kn/E'
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -50,7 +50,7 @@ def heart_beat_e(room_id=23058):
         'Cookie': cookie,
     }
     payload = {
-        'id': [1, 34, 0, 23058],
+        'id': [1, 34, 0, room_id],
         'device': '["c4ca4238a0b923820dcc509a6f75849b","55e2620e-a2b9-4086-bd9a-bc399ba13480"]',
         'ts': int(time.time()) * 1000,
         'is_patch': 0,
@@ -72,7 +72,7 @@ def heart_beat_e(room_id=23058):
 
 
 # 心跳X
-def heart_beat_x(index, payload, room_id=23058):
+def heart_beat_x(index, payload, room_id):
     url = 'https://live-trace.bilibili.com/xlive/data-interface/v1/x25Kn/X'
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -83,7 +83,7 @@ def heart_beat_x(index, payload, room_id=23058):
     }
     s_data = {
         "t": {
-            'id': [1, 34, index, 23058],
+            'id': [1, 34, index, room_id],
             "device": payload['device'],  # LIVE_BUVID
             "ets": payload['ets'],
             "benchmark": payload['secret_key'],
@@ -129,7 +129,7 @@ def generate_s_test():
     url = 'http://127.0.0.1:3000/enc'
     data = {
         "t": {
-            "id": [1, 34, 0, 23058],
+            "id": [1, 34, 0, 11101],
             "device": [
                 "c4ca4238a0b923820dcc509a6f75849b",
                 "55e2620e-a2b9-4086-bd9a-bc399ba13480"
@@ -157,13 +157,20 @@ def generate_s_test():
 # 41.1b7a7f2689ea751d75d4.js:609 cdc04cffba0b1f9f7bfa145b27fc5a4430c95d83d526002371ea363f42c608792798170e3f23dd3eda69480553699ad1b002a8ba7fc60070ae77153930a86e5e
 
 if __name__ == '__main__':
+    room_id=11101
     cookie = ""
     session = requests.Session()
-    data = heart_beat_e(room_id=23058)
-    for index in [1, 2, 3, 4, 5, 6, 7]:
+    data = heart_beat_e(room_id)
+    index=1
+    while True:
         printer(f"Interval {data['heartbeat_interval']} 后开始第 {index} 次")
         time.sleep(data['heartbeat_interval'])
-        response = heart_beat_x(index, data, room_id=23058)
+        response = heart_beat_x(index, data, room_id)
         data['ets'] = response['data']['timestamp']
         data['secret_key'] = response['data']['secret_key']
         data['heartbeat_interval'] = response['data']['heartbeat_interval']
+        ltime = time.localtime(response['data']['timestamp'])
+        t = time.strftime("%Y-%m-%d %H:%M:%S", ltime)
+        with open(f"{room_id}.log", "a+", encoding='utf-8') as l:
+            l.write(f"[{t}] 第 {index} 次\n")
+        index+=1

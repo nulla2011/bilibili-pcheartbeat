@@ -130,3 +130,8 @@ dmypy.json
 
 # NPM
 node_modules
+
+# custom
+example-*.py
+*.log
+package-lock.json
