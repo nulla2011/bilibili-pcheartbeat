@@ -158,7 +158,8 @@ def generate_s_test():
 
 if __name__ == '__main__':
     room_id=11101
-    cookie = ""
+    with open("cookies.ck","r") as c:
+        cookie = c.read()
     session = requests.Session()
     data = heart_beat_e(room_id)
     index=1
